@@ -96,98 +96,152 @@ func nextToken(token *Token, exp Expression, i Index) (*Token, Index, error) {
 	}
 }
 
-func expression(token *Token, exp Expression, i Index) (*Token, Index, error) {
-	token, i, err := term(token, exp, i)
+func expression(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
+	token, i, tNode, err := term(token, exp, i)
 	if err != nil {
-		return token, i, err
+		return token, i, nil, err
 	}
 
-	return expression1(token, exp, i)
+	token, i, e1Node, err := expression1(token, exp, i)
+	if err != nil {
+		return token, i, nil, err
+	}
+
+	return token, i, createASTNode(OperatorPlus, tNode, e1Node), nil
 }
 
-func expression1(token *Token, exp Expression, i Index) (*Token, Index, error) {
+func expression1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
 	switch token.tokenType {
 	case Plus, Minus:
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		token, i, err = term(token, exp, i)
+
+		token, i, tNode, err := term(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		return expression1(token, exp, i)
+
+		token, i, e1Node, err := expression1(token, exp, i)
+		if err != nil {
+			return token, i, nil, err
+		}
+
+		astNodeType := OperatorPlus
+		if token.tokenType == Minus {
+			astNodeType = OperatorMinus
+		}
+
+		return token, i, createASTNode(astNodeType, e1Node, tNode), nil
 
 	default:
-		return token, i, nil
+		return token, i, createNumberASTNode(0), nil
 	}
 }
 
-func term(token *Token, exp Expression, i Index) (*Token, Index, error) {
-	token, i, err := factor(token, exp, i)
+func term(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
+	token, i, fNode, err := factor(token, exp, i)
 	if err != nil {
-		return token, i, err
+		return token, i, nil, err
 	}
 
-	return term1(token, exp, i)
+	token, i, t1Node, err := term1(token, exp, i)
+	if err != nil {
+		return token, i, nil, err
+	}
+
+	return token, i, createASTNode(OperatorMul, fNode, t1Node), err
 }
 
-func term1(token *Token, exp Expression, i Index) (*Token, Index, error) {
+func term1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
 	switch token.tokenType {
 	case Mul, Div:
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		token, i, err = factor(token, exp, i)
+
+		token, i, fNode, err := factor(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		return term1(token, exp, i)
+
+		token, i, t1Node, err := term1(token, exp, i)
+		if err != nil {
+			return token, i, nil, err
+		}
+
+		astNodeType := OperatorMul
+		if token.tokenType == Div {
+			astNodeType = OperatorDiv
+		}
+		node := createASTNode(astNodeType, fNode, t1Node)
+
+		return token, i, node, nil
 
 	default:
-		return token, i, nil
+		return token, i, createNumberASTNode(1), nil
 	}
 }
 
-func factor(token *Token, exp Expression, i Index) (*Token, Index, error) {
+func factor(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
 	switch token.tokenType {
 	case OpenParenthesis:
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		token, i, err = expression(token, exp, i)
+
+		token, i, eNode, err := expression(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		return match(token, exp, i, ')')
+
+		token, i, err = match(token, exp, i, ')')
+		if err != nil {
+			return token, i, nil, err
+		}
+
+		return token, i, eNode, err
 
 	case Minus:
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
-			return token, i, err
+			return token, i, nil, err
 		}
-		return factor(token, exp, i)
+
+		token, i, fNode, err := factor(token, exp, i)
+		if err != nil {
+			return token, i, nil, err
+		}
+
+		return token, i, createUnaryASTNode(fNode), nil
 
 	case Number:
-		return nextToken(token, exp, i)
+		value := token.value
+		token, i, err := nextToken(token, exp, i)
+		if err != nil {
+			return token, i, nil, err
+		}
+
+		return token, i, createNumberASTNode(value), nil
 
 	default:
-		return token, i, unexpectedTokenError(token, i)
+		return token, i, nil, unexpectedTokenError(token, i)
 	}
 }
 
-func ParseExpression(exp Expression) error {
+func ParseExpression(exp Expression) (*ASTNode, error) {
 	token, i, err := nextToken(&Token{Error, 0.0, '0'}, exp, 0)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = expression(token, exp, i)
+	_, _, astNode, err := expression(token, exp, i)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return astNode, nil
 }

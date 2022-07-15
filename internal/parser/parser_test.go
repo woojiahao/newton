@@ -62,7 +62,7 @@ func TestParseExpressionPass(t *testing.T) {
 	}
 
 	for _, v := range variations {
-		err := ParseExpression(v)
+		_, err := ParseExpression(v)
 		if err != nil {
 			t.Errorf("Expression %s should be successful, got %v instead\n", v, err)
 		}
@@ -81,7 +81,7 @@ func TestParseExpressionFail(t *testing.T) {
 	}
 
 	for _, v := range variations {
-		err := ParseExpression(v)
+		_, err := ParseExpression(v)
 		if _, ok := err.(*ParseError); !ok {
 			t.Errorf("Expected ParseError, got %v instead\n", err)
 		}
