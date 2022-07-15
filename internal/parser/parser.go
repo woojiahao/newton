@@ -13,6 +13,13 @@ type (
 	Symbol     byte
 )
 
+func (exp Expression) Get(i Index) (Symbol, error) {
+	if int(i) >= len(exp) {
+		return 0, &ParseError{fmt.Sprintf("Index %d >= length of expression %d", int(i), len(exp))}
+	}
+	return Symbol(exp[i]), nil
+}
+
 const (
 	Error TokenType = iota
 	Plus
@@ -41,13 +48,6 @@ func (p *ParseError) Error() string {
 
 func unexpectedTokenError(token *Token, i Index) *ParseError {
 	return &ParseError{fmt.Sprintf("Invalid token %s found at %d", string(token.symbol), i)}
-}
-
-func (exp Expression) Get(i Index) (Symbol, error) {
-	if int(i) >= len(exp) {
-		return 0, &ParseError{fmt.Sprintf("Index %d >= length of expression %d", int(i), len(exp))}
-	}
-	return Symbol(exp[i]), nil
 }
 
 func nextToken(token *Token, exp Expression, i Index) (*Token, Index, error) {
@@ -191,22 +191,3 @@ func ParseExpression(exp Expression) error {
 
 	return nil
 }
-
-/*
-(1+2)*(3+4)
-nextToken() - ( 1
-expression()
-	term()
-		factor()
-			nextToken() - 1 2
-			expression()
-				term()
-					factor()
-						nextToken() - + 3
-					term1()
-				expression1()
-					nextToken() - 2 4
-					term()
-						factor()
-							nextToken() -
-*/
