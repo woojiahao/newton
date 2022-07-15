@@ -13,10 +13,10 @@ const (
 )
 
 type ASTNode struct {
-	astNodeType ASTNodeType
-	value       Value
-	left        *ASTNode
-	right       *ASTNode
+	ASTNodeType ASTNodeType
+	Value       Value
+	Left        *ASTNode
+	Right       *ASTNode
 }
 
 func emptyASTNode() *ASTNode {
