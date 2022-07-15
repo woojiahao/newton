@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -8,9 +9,14 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+func parseInput(input string) {
+
+}
+
 func main() {
 	a := app.New()
 	w := a.NewWindow("Hello")
+	w.Resize(fyne.NewSize(900, 700))
 
 	titleText := widget.NewLabel("Newton")
 	subTitleText := widget.NewLabel("Newton's Method of Approximation Visualizer")
@@ -28,8 +34,8 @@ func main() {
 
 	})
 	inputContainer := container.NewVBox(
-		container.NewHBox(inputText, inputEntry),
-		container.NewHBox(startingPointText, startingPointEntry),
+		container.NewVBox(inputText, inputEntry),
+		container.NewVBox(startingPointText, startingPointEntry),
 		container.NewHBox(startVisualizationButton, stopVisualizationButton),
 	)
 
