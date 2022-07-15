@@ -22,7 +22,7 @@ func evaluateSubtree(ast *parser.ASTNode) (parser.Value, error) {
 		return -1, invalidASTError()
 	}
 
-	fmt.Printf("\n\nast is %v\n", ast)
+	//fmt.Printf("\n\nast is %v\n", ast)
 
 	if ast.ASTNodeType == parser.NumberValue {
 		return ast.Value, nil

@@ -113,6 +113,11 @@ func expression(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode,
 func expression1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
 	switch token.tokenType {
 	case Plus, Minus:
+		astNodeType := OperatorPlus
+		if token.tokenType == Minus {
+			astNodeType = OperatorMinus
+		}
+
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
 			return token, i, nil, err
@@ -126,11 +131,6 @@ func expression1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode
 		token, i, e1Node, err := expression1(token, exp, i)
 		if err != nil {
 			return token, i, nil, err
-		}
-
-		astNodeType := OperatorPlus
-		if token.tokenType == Minus {
-			astNodeType = OperatorMinus
 		}
 
 		return token, i, createASTNode(astNodeType, e1Node, tNode), nil
@@ -157,6 +157,11 @@ func term(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error
 func term1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, error) {
 	switch token.tokenType {
 	case Mul, Div:
+		astNodeType := OperatorMul
+		if token.tokenType == Div {
+			astNodeType = OperatorDiv
+		}
+
 		token, i, err := nextToken(token, exp, i)
 		if err != nil {
 			return token, i, nil, err
@@ -172,10 +177,6 @@ func term1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, erro
 			return token, i, nil, err
 		}
 
-		astNodeType := OperatorMul
-		if token.tokenType == Div {
-			astNodeType = OperatorDiv
-		}
 		node := createASTNode(astNodeType, fNode, t1Node)
 
 		return token, i, node, nil
