@@ -177,7 +177,7 @@ func term1(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, erro
 			return token, i, nil, err
 		}
 
-		node := createASTNode(astNodeType, fNode, t1Node)
+		node := createASTNode(astNodeType, t1Node, fNode)
 
 		return token, i, node, nil
 
