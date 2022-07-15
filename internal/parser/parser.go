@@ -235,7 +235,7 @@ func factor(token *Token, exp Expression, i Index) (*Token, Index, *ASTNode, err
 func ParseExpression(exp Expression) (*ASTNode, error) {
 	token, i, err := nextToken(&Token{Error, 0.0, '0'}, exp, 0)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, _, astNode, err := expression(token, exp, i)
